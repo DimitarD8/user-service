@@ -32,7 +32,7 @@ public class Account {
     private void encryptSensitiveData() {
         this.password = encodePassword(password);
         if (role == null) {
-            role = Role.STUDENT; // Default role, for example
+            role = Role.STUDENT;
         }
     }
 

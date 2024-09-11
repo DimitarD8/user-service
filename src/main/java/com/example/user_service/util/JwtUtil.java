@@ -17,21 +17,26 @@ public class JwtUtil {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public String generateToken(String username) {
+    public String generateToken(String username, String role) {
         Map<String, Object> claims = new HashMap<>();
-        int jwtExpirationInMillis = 3600000;
+        int jwtExpirationInMillis = 36000000;
         kafkaTemplate.send("secretKeyTopic", secretKey);
-        return Jwts.builder()
+        String token = Jwts.builder()
                 .setClaims(claims)
                 .setSubject(username)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationInMillis))
-                .signWith(SignatureAlgorithm.HS512, secretKey.getBytes()) // Use plain string bytes
+                .signWith(SignatureAlgorithm.HS512, secretKey.getBytes())
                 .compact();
+        String userDetails = username +
+                "," +
+                role;
+        kafkaTemplate.send("userDetailsTopic", userDetails);
+
+        return token;
     }
 
     private byte[] getSecretKeyBytes() {
-        // Use Base64 encoding to get the bytes of the secret key
         return Base64.getDecoder().decode(secretKey);
     }
 }
